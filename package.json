@@ -1,0 +1,22 @@
+{
+  "name": "todolist",
+  "version": "1.0.0",
+  "description": "Todo List App using Express",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chinmaynavale/todolist.git"
+  },
+  "author": "chinmay navale",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chinmaynavale/todolist/issues"
+  },
+  "homepage": "https://github.com/chinmaynavale/todolist#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
