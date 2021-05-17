@@ -7,6 +7,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const items = ['Buy food', 'Cook food', 'Eat food'];
+const workItems = [];
 
 // Home Page
 
@@ -26,9 +27,20 @@ app.get('/', (req, res) => {
 
 app.post('/', (req, res) => {
   const item = req.body;
-  items.push(item.newItem);
 
-  res.redirect('/');
+  if (item.list === 'Work List') {
+    workItems.push(item.newItem);
+    res.redirect('/work');
+  } else {
+    items.push(item.newItem);
+    res.redirect('/');
+  }
+});
+
+// Work Page
+
+app.get('/work', (req, res) => {
+  res.render('list', { listTitle: 'Work List', newListItems: workItems });
 });
 
 const PORT = process.env.PORT || 3000;
