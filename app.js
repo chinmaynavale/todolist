@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+const date = require(__dirname + '/date.js');
+
 app.set('view engine', 'ejs');
 
 app.use(express.urlencoded({ extended: true }));
@@ -10,17 +12,8 @@ const items = ['Buy food', 'Cook food', 'Eat food'];
 const workItems = [];
 
 // Home Page
-
 app.get('/', (req, res) => {
-  const today = new Date();
-
-  const options = {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  };
-
-  const day = today.toLocaleDateString('en-US', options);
+  const day = date.getDate();
 
   res.render('list', { listTitle: day, newListItems: items });
 });
@@ -31,20 +24,19 @@ app.post('/', (req, res) => {
   if (item.list === 'Work List') {
     workItems.push(item.newItem);
     res.redirect('/work');
-  } else {
-    items.push(item.newItem);
-    res.redirect('/');
+    return;
   }
+
+  items.push(item.newItem);
+  res.redirect('/');
 });
 
 // Work Page
-
 app.get('/work', (req, res) => {
   res.render('list', { listTitle: 'Work List', newListItems: workItems });
 });
 
 // About Page
-
 app.get('/about', (req, res) => {
   res.render('about');
 });
