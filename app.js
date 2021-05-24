@@ -8,13 +8,11 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-const items = ['Buy food', 'Cook food', 'Eat food'];
-const workItems = [];
-
 mongoose
   .connect('mongodb://localhost:27017/todolistDB', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useFindAndModify: false,
   })
   .then(() => console.log('Success!, Server is connected to database'))
   .catch(err => console.error(err));
@@ -37,37 +35,48 @@ const item3 = new Item({
   name: 'Click on any todo to mark it as complete.',
 });
 
-Item.insertMany([item1, item2, item3], err => {
-  if (err) {
-    console.error(err);
-    return;
-  }
-  console.log('Success!, saved default items to DB.');
-});
+const defaultItems = [item1, item2, item3];
 
 // Home Page
 app.get('/', (req, res) => {
   const day = date.getDate();
 
-  res.render('list', { listTitle: day, newListItems: items });
+  Item.find({}, (err, itemsFound) => {
+    if (itemsFound.length === 0) {
+      Item.insertMany(defaultItems, err => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log('Success!, saved default items to DB.');
+          res.redirect('/');
+        }
+      });
+      return;
+    }
+
+    res.render('list', { listTitle: day, newListItems: itemsFound });
+  });
 });
 
 app.post('/', (req, res) => {
-  const item = req.body;
+  const itemName = req.body.newItem;
 
-  if (item.list === 'Work List') {
-    workItems.push(item.newItem);
-    res.redirect('/work');
-    return;
-  }
+  const newTodo = new Item({
+    name: itemName,
+  });
 
-  items.push(item.newItem);
+  newTodo.save();
   res.redirect('/');
 });
 
-// Work Page
-app.get('/work', (req, res) => {
-  res.render('list', { listTitle: 'Work List', newListItems: workItems });
+app.post('/delete', (req, res) => {
+  const checkedItemId = req.body.checkbox;
+
+  Item.findOneAndRemove({ _id: checkedItemId }, err => {
+    if (!err) console.log('deleted!', checkedItemId);
+  });
+
+  res.redirect('/');
 });
 
 // About Page
