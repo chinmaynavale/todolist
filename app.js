@@ -21,7 +21,14 @@ const itemsSchema = new mongoose.Schema({
   name: String,
 });
 
+const listSchema = new mongoose.Schema({
+  name: String,
+  items: [itemsSchema],
+});
+
 const Item = mongoose.model('Item', itemsSchema);
+
+const List = mongoose.model('List', listSchema);
 
 const item1 = new Item({
   name: 'Welcome to your todolist!',
@@ -55,6 +62,28 @@ app.get('/', (req, res) => {
     }
 
     res.render('list', { listTitle: day, newListItems: itemsFound });
+  });
+});
+
+app.get('/:customListName', (req, res) => {
+  const customListName = req.params.customListName;
+
+  List.findOne({ name: customListName }, (err, foundList) => {
+    if (!err) {
+      if (!foundList) {
+        const list = new List({
+          name: customListName,
+          items: defaultItems,
+        });
+        list.save();
+        res.redirect('/' + customListName);
+      } else {
+        res.render('list', {
+          listTitle: foundList.name,
+          newListItems: foundList.items,
+        });
+      }
+    }
   });
 });
 
