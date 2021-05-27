@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const _ = require('lodash/string');
+const _ = require('lodash');
 
 const app = express();
 
@@ -64,7 +64,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/:customListName', (req, res) => {
-  const customListName = _.capitalize(req.params.customListName);
+  const customListName = _.trim(_.capitalize(req.params.customListName));
 
   List.findOne({ name: customListName }, async (err, foundList) => {
     if (!err) {
@@ -115,20 +115,18 @@ app.post('/delete', (req, res) => {
 
   if (listName === 'Today') {
     Item.findOneAndRemove({ _id: checkedItemId }, err => {
-      if (!err) console.log('deleted!', checkedItemId);
+      if (!err) console.log('deleted!');
       res.redirect('/');
     });
-    return;
-  }
-
-  List.findOneAndUpdate(
-    { name: listName },
-    { $pull: { items: { _id: checkedItemId } } },
-    (err, foundList) => {
-      if (!err) {
+  } else {
+    List.findOneAndUpdate(
+      { name: listName },
+      { $pull: { items: { _id: checkedItemId } } },
+      (err, foundList) => {
+        if (!err) res.redirect('/' + listName);
       }
-    }
-  );
+    );
+  }
 });
 
 // About Page
