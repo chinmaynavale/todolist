@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const date = require(__dirname + '/date.js');
+const _ = require('lodash/string');
 
 const app = express();
 
@@ -46,8 +46,6 @@ const defaultItems = [item1, item2, item3];
 
 // Home Page
 app.get('/', (req, res) => {
-  const day = date.getDate();
-
   Item.find({}, (err, itemsFound) => {
     if (itemsFound.length === 0) {
       Item.insertMany(defaultItems, err => {
@@ -61,12 +59,12 @@ app.get('/', (req, res) => {
       return;
     }
 
-    res.render('list', { listTitle: day, newListItems: itemsFound });
+    res.render('list', { listTitle: 'Today', newListItems: itemsFound });
   });
 });
 
 app.get('/:customListName', (req, res) => {
-  const customListName = req.params.customListName;
+  const customListName = _.capitalize(req.params.customListName);
 
   List.findOne({ name: customListName }, async (err, foundList) => {
     if (!err) {
@@ -88,8 +86,6 @@ app.get('/:customListName', (req, res) => {
 });
 
 app.post('/', async (req, res) => {
-  const day = date.getDate();
-
   const itemName = req.body.newItem;
   const listName = req.body.list;
 
@@ -98,7 +94,7 @@ app.post('/', async (req, res) => {
   });
 
   try {
-    if (listName == day) {
+    if (listName === 'Today') {
       await item.save();
       res.redirect('/');
     } else {
@@ -115,12 +111,24 @@ app.post('/', async (req, res) => {
 
 app.post('/delete', (req, res) => {
   const checkedItemId = req.body.checkbox;
+  const listName = req.body.listName;
 
-  Item.findOneAndRemove({ _id: checkedItemId }, err => {
-    if (!err) console.log('deleted!', checkedItemId);
-  });
+  if (listName === 'Today') {
+    Item.findOneAndRemove({ _id: checkedItemId }, err => {
+      if (!err) console.log('deleted!', checkedItemId);
+      res.redirect('/');
+    });
+    return;
+  }
 
-  res.redirect('/');
+  List.findOneAndUpdate(
+    { name: listName },
+    { $pull: { items: { _id: checkedItemId } } },
+    (err, foundList) => {
+      if (!err) {
+      }
+    }
+  );
 });
 
 // About Page
