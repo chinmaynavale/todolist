@@ -1,3 +1,6 @@
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 const express = require('express');
 const mongoose = require('mongoose');
 const _ = require('lodash');
@@ -9,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 mongoose
-  .connect('mongodb://localhost:27017/todolistDB', {
+  .connect(process.env.DATABASE_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
@@ -134,6 +137,4 @@ app.get('/about', (req, res) => {
   res.render('about');
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => console.log('Server running on Port 3000'));
+app.listen(process.env.PORT || 3000);
